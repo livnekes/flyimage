@@ -7,15 +7,18 @@ var Loader = React.createClass({
 });
 
 var ImageBox = React.createClass({
+  randomPic: function() {
+    return 'https://unsplash.it/200/200/?random&' + Math.random();
+  },
   getInitialState: function() {
   	return {
-      src: 'http://lorempixel.com/g/200/200?' + Math.random(),
+      src: this.randomPic(),
       loaderClass: ''
     };
   },
   handleBtnClick: function() {
   	this.setState({ loaderClass: '' });
-  	this.setState({ src: 'http://lorempixel.com/g/200/200?' + Math.random() });
+  	this.setState({ src: this.randomPic() });
   },
   handleTextClick: function() {
   	this.setState({ loaderClass: '' });
@@ -28,14 +31,16 @@ var ImageBox = React.createClass({
   	this.setState({ src: 'error.jpeg' });
   },
   render: function() {
+    var hide = { display: 'none' }
     return (
       <div className="imageBox">
         <span><p onClick={this.handleTextClick}>{this.props.text}</p></span>
+        <p style={hide}>{this.props.size}</p>
         <img src={this.state.src} 
         	 width={this.props.size}
         	 height={this.props.size}
-             onLoad={this.handleImageLoaded}
-             onError={this.handleImageErrored}/>
+           onLoad={this.handleImageLoaded}
+           onError={this.handleImageErrored}/>
         <Loader classes={this.state.loaderClass}/>
         <a><button onClick={this.handleBtnClick}>click me!</button></a>
       </div>
@@ -44,12 +49,30 @@ var ImageBox = React.createClass({
 });
 
 var GalleryBox = React.createClass({
+  calcSize: function(rowSize) {
+    return window.innerWidth / rowSize - 12;
+  },
+  getInitialState: function() {
+    var images = [], numOfImages = 30, rowSize = 5;
+    for (var i = 1; i < numOfImages + 1; i++) {
+      images.push(i);
+    }
+    return {
+      rowSize: rowSize,
+      size: this.calcSize(rowSize),
+      images: images
+    };
+  },
+  handleResize: function(e) {
+    this.setState({size: this.calcSize(this.state.rowSize)});
+  },
+  componentDidMount: function() {
+    window.addEventListener('resize', this.handleResize);
+  },
   render: function() {
-  	var images = [], numOfImages = 30, rowSize = 3, size;
-  	for (var i = 1; i < numOfImages + 1; i++) {
-  		images.push(i);
-  	}
-  	size = window.innerWidth / rowSize - 12;
+    var images, size;
+    images = this.state.images;
+    size = this.state.size;
     return (
       <div className="galleryBox">
       	{images.map(function(i) {
